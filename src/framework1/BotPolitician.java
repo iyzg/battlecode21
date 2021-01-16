@@ -17,7 +17,6 @@ public class BotPolitician extends Bot {
             rc.empower(actionRadius);
             return;
         }
-        if (Bot.tryMove(Bot.randomDirection()))
-            System.out.println("I moved!");
+        if (Bot.tryMove(Bot.randomDirection())) return;
     }
 }
