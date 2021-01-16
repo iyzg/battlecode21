@@ -29,7 +29,7 @@ public class BotPolitician extends Bot {
             }
         }
 
-        if (bestR > -1) {
+        if (bestR > -1 && rc.canEmpower(bestR)) {
             rc.empower(bestR);
             return;
         }
