@@ -5,12 +5,6 @@ import battlecode.common.*;
 public class BotEC extends Bot {
     private static int robotsSpawned = 0;
 
-    static final RobotType[] spawnableRobot = {
-        RobotType.SLANDERER,
-        RobotType.MUCKRAKER,
-        RobotType.POLITICIAN,
-    };
-
     private static void trySpawn(RobotType type, int influence) throws GameActionException {
         for (Direction dir : directions) {
             if (rc.canBuildRobot(type, dir, influence)) {
@@ -21,9 +15,11 @@ public class BotEC extends Bot {
     }
 
     public static void turn() throws GameActionException {
-        RobotType toBuild = Bot.randomSpawnableRobotType();
         int influence = rc.getInfluence();
         here = rc.getLocation();
+
+        // TODO: Special spawning depending on how many muckrakers you find, or how close you are to opponent
+        // TODO: Read flag from scouting muckrakers
 
         if (rc.isReady()) {
             // Spawn pattern S M M P
@@ -34,8 +30,14 @@ public class BotEC extends Bot {
             } else if (robotsSpawned % 4 < 3) {
                 trySpawn(RobotType.MUCKRAKER, 1);
             } else {
+                int randomInfluence;
+                // Spawn larger one if possible, these will go cap neutrals
+                if (influence >= 500) {
+                    randomInfluence = (int)(Math.random() * (501 - 250)) + 250;
+                }
+
                 // Range from 20 - 30
-                int randomInfluence = (int)(Math.random() * (31 - 20)) + 20;
+                randomInfluence = (int)(Math.random() * (31 - 20)) + 20;
                 trySpawn(RobotType.POLITICIAN, Math.min(randomInfluence, influence - 10));
             }
             ++robotsSpawned;

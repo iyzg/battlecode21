@@ -14,6 +14,8 @@ public class BotMuckraker extends Bot {
                 }
             }
         }
+
+        
         if (Bot.tryMove(Bot.randomDirection())) return;
     }
 }

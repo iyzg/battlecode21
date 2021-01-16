@@ -10,10 +10,9 @@ public class BotPolitician extends Bot {
         double buff = rc.getEmpowerFactor(us, 0);
 
         int bestTakenOut = 0, bestR = -1;
-
-        // TODO: Take neutral ECs
+        // TODO: Take neutral ECs 
+        
         int conviction = (int)(rc.getConviction() * buff);
-
         for (int r = 1; r <= 9; ++r) {
             int localTakenOut = 0;
             RobotInfo[] localAllies = rc.senseNearbyRobots(r, us);
