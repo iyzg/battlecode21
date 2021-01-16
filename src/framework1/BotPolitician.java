@@ -9,12 +9,28 @@ public class BotPolitician extends Bot {
         int actionRadius = rc.getType().actionRadiusSquared;
         double buff = rc.getEmpowerFactor(us, 0);
 
-        RobotInfo[] nearbyEnemies = rc.senseNearbyRobots(actionRadius, them);
-        RobotInfo[] nearbyAllies = rc.senseNearbyRobots(actionRadius, us);
+        int bestTakenOut = 0, bestR = -1;
 
+        // TODO: Take neutral ECs
         int conviction = (int)(rc.getConviction() * buff);
-        if (nearbyEnemies.length != 0 && rc.canEmpower(actionRadius)) {
-            rc.empower(actionRadius);
+
+        for (int r = 1; r <= 9; ++r) {
+            int localTakenOut = 0;
+            RobotInfo[] localAllies = rc.senseNearbyRobots(r, us);
+            RobotInfo[] localEnemies = rc.senseNearbyRobots(r, them);
+            if (localAllies.length + localEnemies.length == 0) continue;
+            int infSpread = (conviction - 10) / (localAllies.length + localEnemies.length);
+            for (RobotInfo enemy : localEnemies) {
+                if (enemy.conviction < infSpread) ++localTakenOut;
+            }
+            if (localTakenOut > bestTakenOut) {
+                bestTakenOut = localTakenOut;
+                bestR = r;
+            }
+        }
+
+        if (bestR > -1) {
+            rc.empower(bestR);
             return;
         }
         if (Bot.tryMove(Bot.randomDirection())) return;
