@@ -1,0 +1,131 @@
+package framework1;
+
+import battlecode.common.*;
+
+interface NavPolicy {
+    boolean isSafeToMoveTo(MapLocation loc);
+}
+
+class PolicyMuckrakerSpread extends Bot implements NavPolicy {
+	RobotInfo[] nearbyAllies;
+	RobotInfo[] nearbyEnemies;
+
+	public PolicyMuckrakerSpread(RobotInfo[] nearbyAllies, RobotInfo[] nearbyEnemies) {
+		this.nearbyAllies = nearbyAllies;
+		this.nearbyEnemies = nearbyEnemies;
+	}
+
+	public boolean isSafeToMoveTo(MapLocation loc) {
+		// TODO: Make sure you don't move into any double kills, one thing to note here is that you could be moving into double if straight line.
+		// Keep muckrakers spread out
+		// TODO: Bytcode efficient?
+		//System.out.println("CHCECKING IF ITS SAFE");
+		for (RobotInfo enemy : nearbyEnemies) {
+			if (!enemy.type.equals(RobotType.POLITICIAN)) continue;
+			if (loc.distanceSquaredTo(enemy.location) > 9) continue;
+
+			//System.out.println("Found poli at " + enemy.location);
+			for (RobotInfo ally : nearbyAllies) {
+				if (!ally.type.equals(RobotType.MUCKRAKER)) continue;
+
+				//System.out.println("found mc at " + ally.location);
+				//System.out.println("dist between is " + ally.location.distanceSquaredTo(enemy.location));
+				if (ally.location.distanceSquaredTo(enemy.location) <= 9) {
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+}
+
+public class Nav extends Bot {
+	private static MapLocation dest;
+    private static NavPolicy policy;
+
+	private static boolean move(Direction dir) throws GameActionException {
+        rc.move(dir);
+        return true;
+    }
+
+    /**
+     * Check if you can move in a direction
+     * @param dir - Direction to check
+     * @return - True if you can move in that direction and it's safe.
+     */
+    private static boolean canMove(Direction dir) {
+        return rc.canMove(dir) && policy.isSafeToMoveTo(here.add(dir));
+    }
+
+    /**
+     * Number of right rotations to face different directions
+     */
+    public static int numRightRotations(Direction start, Direction end) {
+        return (end.ordinal() - start.ordinal() + 8) % 8;
+    }
+
+    /**
+     * Number of left rotations to face different directions
+     */
+    public static int numLeftRotations(Direction start, Direction end) {
+        return (-end.ordinal() + start.ordinal() + 8) % 8;
+    }
+
+	/**
+	 * Try to directly take the straight line to the destination.
+	 * @return - True if you can take the direct line
+	 * @throws GameActionException
+	 */
+	private static boolean tryMoveDirect() throws GameActionException {
+		Direction toDest = here.directionTo(dest);
+
+		if (canMove(toDest)) {
+			//System.out.println("Moving: " + toDest);
+			move(toDest);
+			return true;
+		}
+
+		Direction[] dirs = new Direction[2];
+		dirs[0] = toDest.rotateLeft();
+		dirs[1] = toDest.rotateRight();
+		for (Direction idirs : dirs) {
+			//System.out.println("Trying: " + idirs);
+
+			if (canMove(idirs)) {
+				move(idirs);
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * Move directly to the destination.
+	 * @param theDest - Destination square you want to reach
+	 * @param thePolicy - Policy to decide whether you can head in a direction
+	 * @throws GameActionException
+	 */
+	public static void goTo(MapLocation theDest, NavPolicy thePolicy) throws GameActionException {
+		dest = theDest;
+		policy = thePolicy;
+
+		if (here.equals(dest)) return;
+
+		tryMoveDirect();
+	}
+
+	// TODO: Bug nav around enemy units?
+
+    /**
+     * Moves a bot in the general direction
+     * @param theDir - Direction to move
+     * @param thePolicy - Policy to determine whether or not you should move
+     * @throws GameActionException
+     */
+	public static void moveDirection(Direction theDir, NavPolicy thePolicy) throws GameActionException {
+		dest = here.add(theDir);
+
+		goTo(dest, thePolicy);
+	}
+}
