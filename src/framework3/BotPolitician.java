@@ -47,12 +47,24 @@ public class BotPolitician extends Bot {
         }
     }
 
+    private static int lastDist = -1;
+    private static int turnsStuck = 0;
+
     // TODO: Get within 1 range if possible
     private static boolean tryEmpowerTarget(RobotInfo[] nearby) throws GameActionException {
         int distTo = here.distanceSquaredTo(target);
-        if (distTo >= 3) return false;
-        // TODO: Only detonate 2 away if 1 is blocked off by enemies
-        if (distTo <= 2) {
+        // TODO: Only detonate 2 away if you can convert the EC
+
+        if (distTo == lastDist) {
+            ++turnsStuck;
+        } else {
+            lastDist = distTo;
+            turnsStuck = 0;
+        }
+
+        System.out.println(lastDist + " " + turnsStuck);
+
+        if (turnsStuck == 8 || distTo == 1) {
             if (rc.canEmpower(distTo)) {
                 rc.empower(distTo);
                 return true;
@@ -116,7 +128,6 @@ public class BotPolitician extends Bot {
         if (moveTowardsTarget()) return;
         if (tryEmpower()) return;
 
-        System.out.println("moving random dir");
         if (Bot.tryMove(Bot.randomDirection())) return;
     }
 }

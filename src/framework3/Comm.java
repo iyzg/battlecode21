@@ -28,10 +28,17 @@ public class Comm extends Bot {
     /**
      * Generic to send a location on the map.
      */
-    static void sendLocation(MapLocation location, int extraInformation) throws GameActionException {
+    static void sendLocation(MapLocation location, int extraInformation, int command) throws GameActionException {
         int x = location.x, y = location.y;
-        int encodedLocation = (extraInformation << (2*NBITS)) + ((x & BITMASK) << NBITS) + (y & BITMASK);
+        int encodedLocation = (extraInformation << (2*NBITS)) + ((x & BITMASK) << NBITS) + (y & BITMASK) + (command << 22);
         if (rc.canSetFlag(encodedLocation)) {
+            rc.setFlag(encodedLocation);
+        }
+    }
+
+    static void sendCommand(int command) throws GameActionException{
+        int encodedLocation = (command << 22);
+        if(rc.canSetFlag(encodedLocation)){
             rc.setFlag(encodedLocation);
         }
     }
@@ -52,7 +59,6 @@ public class Comm extends Bot {
     public static MapLocation getLocationFromFlag(int flag){
         int y = flag & BITMASK;
         int x = (flag >> NBITS) & BITMASK;
-        // int extraInformation = flag >> (2*NBITS);
 
         MapLocation currentLocation = rc.getLocation();
         int offsetX128 = currentLocation.x >> NBITS;
@@ -80,6 +86,11 @@ public class Comm extends Bot {
     }
 
     public static int getExtraInformationFromFlag(int flag) {
-        return flag >> (2*NBITS);
+        int mask = (1 << 8) - 1;
+        return ((flag >> (2*NBITS)) & mask);
+    }
+
+    public static int getCommandFromFlag(int flag) {
+        return (flag >> 22);
     }
 }

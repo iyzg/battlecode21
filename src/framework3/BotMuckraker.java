@@ -7,19 +7,28 @@ public class BotMuckraker extends Bot {
     private static int sensorRadius = rc.getType().sensorRadiusSquared;
     private static NavPolicy navPolicy;
 
+	/**
+	 * Commands
+	 * 2 - Found EC
+	 * 1 - Found Enemy
+	 */
     public static void setFlag(RobotInfo[] nearby) throws GameActionException {
         MapLocation loc = null;
         int bucket = -1;
+		boolean foundEnemy = false;
         for (RobotInfo robot : nearby) {
             if (robot.getType().equals(RobotType.ENLIGHTENMENT_CENTER) && !robot.getTeam().equals(us)) {
+				if (robot.getTeam().equals(them)) foundEnemy = true;
                 loc = robot.location;
                 bucket = (int)Math.min(Math.ceil(robot.getInfluence() / 50.0), 31);
             }
         }
 
         if (loc != null) {
-			Comm.sendLocation(loc, bucket);
-		} else rc.setFlag(0);
+			Comm.sendLocation(loc, bucket, 2);
+		} else if (foundEnemy) {
+			Comm.sendCommand(1);
+	    } else rc.setFlag(0);
     }
 
     private static boolean destroySlanderer(RobotInfo[] enemies) throws GameActionException {
