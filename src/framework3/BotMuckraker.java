@@ -12,14 +12,20 @@ public class BotMuckraker extends Bot {
 	 * 2 - Found EC
 	 * 1 - Found Enemy
 	 */
+	// TODO: If you see any muckraker with higher priority, set it to that instead (Set to EC found which is closest to home)
     public static void setFlag(RobotInfo[] nearby) throws GameActionException {
         MapLocation loc = null;
         int bucket = -1;
 		boolean foundEnemy = false;
         for (RobotInfo robot : nearby) {
-            if (robot.getType().equals(RobotType.ENLIGHTENMENT_CENTER) && !robot.getTeam().equals(us)) {
-				if (robot.getTeam().equals(them)) foundEnemy = true;
-                loc = robot.location;
+			Team robotTeam = robot.getTeam();
+			RobotType robotType = robot.getType();
+			MapLocation robotLocation = robot.location;
+
+			if (robot.getTeam().equals(them)) foundEnemy = true;
+
+            if (robotType.equals(RobotType.ENLIGHTENMENT_CENTER) && !robotTeam.equals(us)) {
+                loc = robotLocation;
                 bucket = (int)Math.min(Math.ceil(robot.getInfluence() / 50.0), 31);
             }
         }
@@ -124,6 +130,8 @@ public class BotMuckraker extends Bot {
     }
     
     public static void turn() throws GameActionException {
+		if (turnsAlive == 0) Bot.setHome();
+
         RobotInfo[] nearby = rc.senseNearbyRobots(sensorRadius);
         RobotInfo[] nearbyNeutral = rc.senseNearbyRobots(sensorRadius, neutral);
         RobotInfo[] nearbyAllies = rc.senseNearbyRobots(sensorRadius, us);

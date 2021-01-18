@@ -23,10 +23,7 @@ public class BotPolitician extends Bot {
             if (ECInf <= conviction && target == null) target = Comm.getLocationFromFlag(homeFlag);
         }
         // TODO: If you see some neutral EC you can take, take it.
-        // TODO: Tidy up code
-        // TODO: Try to move within radius of 1, only explode radius of 2 if needed
  
-
         if (target != null) {
             for (RobotInfo robot : nearbyAllies) {
                 if (robot.location.equals(target)) {
@@ -50,7 +47,6 @@ public class BotPolitician extends Bot {
     private static int lastDist = -1;
     private static int turnsStuck = 0;
 
-    // TODO: Get within 1 range if possible
     private static boolean tryEmpowerTarget(RobotInfo[] nearby) throws GameActionException {
         int distTo = here.distanceSquaredTo(target);
         // TODO: Only detonate 2 away if you can convert the EC
@@ -62,9 +58,7 @@ public class BotPolitician extends Bot {
             turnsStuck = 0;
         }
 
-        System.out.println(lastDist + " " + turnsStuck);
-
-        if (turnsStuck == 8 || distTo == 1) {
+        if (turnsStuck >= 8 || distTo == 1) {
             if (rc.canEmpower(distTo)) {
                 rc.empower(distTo);
                 return true;

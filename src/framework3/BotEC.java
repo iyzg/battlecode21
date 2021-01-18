@@ -22,27 +22,32 @@ public class BotEC extends Bot {
 
     private static ECBehavior behavior = ECBehavior.GREEDY;
 
-    // TODO: Spawn greedily until you spot an enemy
-
     // TODO: Change this depending on either how many ECs or turns in
     private static int SCOUT_CAP = 80;
 
-    // TODO: Larger number commands are higher priority
+    // TODO: set target to the closest EC
     private static void updateFlag() throws GameActionException {
         int priority = 0;
         int toSet = 0;
+        MapLocation loc = null;
         for (int id : scouts) {
             if (id != 0 && rc.canGetFlag(id)) {
                 int allyFlag = rc.getFlag(id);
                 if (allyFlag == 0) continue;
                 int command = Comm.getCommandFromFlag(allyFlag);
-                MapLocation loc = Comm.getLocationFromFlag(allyFlag);
-                int extra = Comm.getExtraInformationFromFlag(allyFlag);
-
+                MapLocation ecLoc = Comm.getLocationFromFlag(allyFlag);
+                
+                if (command > 0) foundEnemy = true;
+                
                 if (command > priority) {
-                    if (command == 1) foundEnemy = true;
                     priority = command;
                     toSet = allyFlag;
+                    loc = ecLoc;
+                } else if (command == 2) {
+                    if (here.distanceSquaredTo(ecLoc) < here.distanceSquaredTo(loc)) {
+                        toSet = allyFlag;
+                        loc = ecLoc;
+                    }
                 }
             } else id = 0;
         }
@@ -150,9 +155,9 @@ public class BotEC extends Bot {
 
         if (foundEnemy && behavior == ECBehavior.GREEDY) {
             behavior = ECBehavior.SAFE;
-        } else if (robotsSpawned == 0 && rc.getRoundNum() >= 200) {
+        } else if (robotsSpawned == 0 && rc.getRoundNum() >= 30) {
             behavior = ECBehavior.BUFFER;
-        } else if (behavior == ECBehavior.BUFFER && robotsSpawned == 10) {
+        } else if (behavior == ECBehavior.BUFFER && robotsSpawned == 15) {
             behavior = ECBehavior.SAFE;
         } else if (rc.getRoundNum() >= 650) {
             behavior = ECBehavior.PUSH;
