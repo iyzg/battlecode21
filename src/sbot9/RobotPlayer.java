@@ -1,4 +1,4 @@
-package framework4;
+package sbot9;
 
 import battlecode.common.*;
 
@@ -17,7 +17,7 @@ public class RobotPlayer extends Bot {
                 Clock.yield();
             } catch (Exception e) {
                 e.printStackTrace();
-                rc.resign();
+				// rc.resign();
             }
         }
     }

@@ -1,4 +1,4 @@
-package framework4;
+package sbot2;
 
 import battlecode.common.*;
 
